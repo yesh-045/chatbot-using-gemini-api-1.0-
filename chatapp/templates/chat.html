@@ -1,0 +1,164 @@
+<!-- chatbot/templates/chat.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5; /* Background color similar to WhatsApp */
+        }
+
+        #chat-container {
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 70px;
+            border: 1px solid #ddd; /* Lighter border color */
+            border-radius: 10px;
+            background-color: #fff; /* White background color */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Box shadow for depth */
+        }
+
+        .message-container {
+            margin-bottom: 10px;
+            overflow: auto;
+        }
+
+        .user-message {
+            float: right; /* Align user messages to the right */
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-left: 20%; /* Add margin to separate from bot messages */
+            max-width: 70%; /* Limit message width */
+        }
+
+        .bot-message {
+            float: left; /* Align bot messages to the left */
+            background-color: #ddd;
+            color: #000;
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-right: 20%; /* Add margin to separate from user messages */
+            max-width: 70%; /* Limit message width */
+        }
+
+        #chat-box {
+            height: 300px;
+            overflow-y: auto;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd; /* Lighter border color */
+        }
+
+        #user-input {
+            width: calc(100% - 70px);
+            margin-right: 10px;
+            padding: 10px;
+            border: 1px solid #ddd; /* Lighter border color */
+            border-radius: 20px; /* Rounded corners */
+        }
+
+        #send-btn {
+            padding: 10px 20px;
+          float: right;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 20px; /* Rounded corners */
+            cursor: pointer;
+            transition: background-color 0.3s; /* Smooth hover transition */
+        }
+
+        #send-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Loading indicator */
+        #loading-indicator {
+            display: none; /* Initially hidden */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light box shadow */
+        }
+
+        #loading-text {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <center><h1>Chatbot</h1></center>
+    <div id="chat-container">
+        <div id="chat-box"></div>
+        <form id="chat-form">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button type="submit" id="send-btn">Send</button>
+        </form>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loading-indicator">
+        <span id="loading-text">Loading...</span>
+    </div>
+
+    <script>
+        document.getElementById('chat-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+            sendMessage();
+        });
+
+        function sendMessage() {
+            var userMessage = document.getElementById('user-input').value;
+            document.getElementById('user-input').value = '';
+
+            var chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += '<div class="message-container"><div class="user-message">' + userMessage + '</div></div>';
+
+            // Show loading indicator
+            var loadingIndicator = document.getElementById('loading-indicator');
+            loadingIndicator.style.display = 'block';
+
+            // Send the message to the server
+            fetch('/get_bot_response/?user_message=' + encodeURIComponent(userMessage))
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    var botResponse = data.bot_response;
+                    chatBox.innerHTML += '<div class="message-container"><div class="bot-message">' + botResponse + '</div></div>';
+
+                    // Hide loading indicator
+                    loadingIndicator.style.display = 'none';
+
+                    // Scroll to bottom of chat box
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    chatBox.innerHTML += '<div class="message-container"><div class="bot-message">Error: Failed to get response from the server</div></div>';
+
+                    // Hide loading indicator
+                    loadingIndicator.style.display = 'none';
+                });
+        }
+    </script>
+</body>
+<footer>
+   <center> Powered by Gemini-2024.
+    &copy Yesh-2024 </center>
+</footer>
+</html>
